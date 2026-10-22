@@ -10,6 +10,7 @@ interface State {
   sourceLabel: string
   setPeriod: (p: PeriodKey) => void
   setTrades: (t: Trade[], label: string) => void
+  updateTrade: (id: string, patch: Partial<Trade>) => void
   importFrom: (s: TradeSource) => Promise<void>
   reset: () => void
 }
@@ -22,6 +23,10 @@ export const useStore = create<State>()(
       sourceLabel: 'Données de démo',
       setPeriod: (period) => set({ period }),
       setTrades: (trades, sourceLabel) => set({ trades, sourceLabel }),
+      updateTrade: (id, patch) =>
+        set((st) => ({
+          trades: st.trades.map((t) => (t.id === id ? { ...t, ...patch } : t)),
+        })),
       importFrom: async (s) => {
         const trades = await s.load()
         set({ trades, sourceLabel: s.label })
