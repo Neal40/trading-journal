@@ -38,6 +38,9 @@ export function generateDemo(n = 40): Trade[] {
       mfe: profit > 0 ? profit * (1 + rnd() * 0.3) : rnd() * 500,
       tags: [],
       images: [],
+      reasons: [],
+      rulesRespected: null,
+      comment: '',
     })
   }
   return out
