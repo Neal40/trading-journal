@@ -13,7 +13,7 @@ import { RiskDistribution } from '../components/RiskDistribution'
 import { MaeMfeChart } from '../components/MaeMfeChart'
 import { DurationScatter } from '../components/DurationScatter'
 import { SocialRadar } from '../components/SocialRadar'
-import GainCalendar from '../components/GainCalendar'
+import Calendar from '../components/Calendar'
 import PositionsTable from '../components/PositionsTable'
 import TimeHeatmap from '../components/TimeHeatmap'
 import SymbolPerformance from '../components/SymbolPerformance'
@@ -86,7 +86,7 @@ export default function JournalPage() {
       <RiskDistribution s={s} />
 
       <div className="grid g-half">
-        <GainCalendar />
+        <Calendar />
         <TimeHeatmap />
       </div>
 

@@ -21,6 +21,7 @@ export interface Trade {
   rulesRespected: boolean | null
   comment: string
   accountId?: string
+  status?: string
 }
 
 export type PeriodKey = 'ALL' | '1J' | '1S' | '1M' | '1A'
