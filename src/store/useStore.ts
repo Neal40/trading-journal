@@ -31,6 +31,7 @@ interface State {
   toggleArchive: (id: string) => void
   setActiveAccount: (id: string) => void
   addEcriture: (e: Omit<Ecriture, 'id'>) => void
+  updateEcriture: (id: string, patch: Partial<Omit<Ecriture, 'id'>>) => void
   removeEcriture: (id: string) => void
 }
 
@@ -87,6 +88,10 @@ export const useStore = create<State>()(
       setActiveAccount: (id) => set({ activeAccountId: id }),
       addEcriture: (e) =>
         set((st) => ({ ecritures: [...st.ecritures, { ...e, id: crypto.randomUUID() }] })),
+      updateEcriture: (id, patch) =>
+        set((st) => ({
+          ecritures: st.ecritures.map((e) => (e.id === id ? { ...e, ...patch } : e)),
+        })),
       removeEcriture: (id) =>
         set((st) => ({ ecritures: st.ecritures.filter((e) => e.id !== id) })),
     }),
