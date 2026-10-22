@@ -103,28 +103,35 @@ export default function ComptesPage({ onNavigate }: Props) {
 
   return (
     <section className="comptes">
-      <div className="comptes-top">
-        <div className="card alldata">
-          <h3>COMPTE ALL-DATA</h3>
-          <div className="alldata-head">
-            <div className="alldata-ico">🏛</div>
-            <div>
-              <div className="alldata-name">Devises mixtes</div>
-              <div className="sb-mute">{actifsCount} compte(s) actif(s) / {inactifsCount} inactif(s)</div>
+      <div className="alldata-wrap">
+        <div className="alldata">
+          <div className="alldata-title">Compte All-Data</div>
+          <div className="alldata-card">
+            <div className="alldata-head">
+              <div className="alldata-ico">🏛</div>
+              <div>
+                <div className="alldata-name">Devises mixtes</div>
+                <div className="alldata-sub">{actifsCount} compte(s) actif(s) / {inactifsCount} inactif(s)</div>
+              </div>
+            </div>
+            <div className="alldata-rows">
+              <div className="alldata-row"><span>Nombre de positions</span><span>{allTrades.length}</span></div>
+              <div className="alldata-row"><span>Positions gagnantes</span><span className="pos">{wins}</span></div>
+              <div className="alldata-row"><span>Positions perdantes</span><span className="neg">{losses}</span></div>
+              <div className="alldata-row"><span>Winrate</span><span>{winrate.toFixed(2)} %</span></div>
+              <div className="alldata-sep" />
+              <div className={`alldata-row bold ${rendement >= 0 ? 'pos' : 'neg'}`}><span>Rendement</span><span>{rendement >= 0 ? '+' : ''}{rendement.toFixed(2)} %</span></div>
             </div>
           </div>
-          <div className="kv"><span>Nombre de positions</span><b>{allTrades.length}</b></div>
-          <div className="kv"><span>Positions gagnantes</span><b className="pos">{wins}</b></div>
-          <div className="kv"><span>Positions perdantes</span><b className="neg">{losses}</b></div>
-          <div className="kv"><span>Winrate</span><b>{winrate.toFixed(2)} %</b></div>
-          <div className="kv"><span>Rendement</span><b className={rendement >= 0 ? 'pos' : 'neg'}>{rendement >= 0 ? '+' : ''}{rendement.toFixed(2)} %</b></div>
-          <button className="btn-blue full" onClick={openAllData}>Voir toutes mes performances</button>
+          <div className="alldata-foot">
+            <button className="btn-blue" onClick={openAllData}>Voir toutes mes performances</button>
+          </div>
         </div>
 
-        <div className="card">
-          <div className="tabs">
+        <div className="alldata">
+          <div className="acct-tabs">
             {(Object.keys(counts) as Tab[]).map(k => (
-              <button key={k} className={tab === k ? 'tab active' : 'tab'} onClick={() => setTab(k)}>
+              <button key={k} className={`acct-tab${tab === k ? ' on' : ''}`} onClick={() => setTab(k)}>
                 {k} ({counts[k]})
               </button>
             ))}
@@ -145,26 +152,29 @@ export default function ComptesPage({ onNavigate }: Props) {
               />
             ))}
             <button className="acct-add" onClick={() => setShowAdd(true)}>
-              + Ajouter un nouveau compte
+              <span className="plus">+</span>
+              Ajouter un nouveau compte
             </button>
           </div>
         </div>
       </div>
 
-      <div className="card">
-        <div className="card-head">
-          <h3>PROFITABILITÉ TOTALE</h3>
-          <button className="btn-blue" onClick={() => setShowEcriture(true)}>+ Nouvelle écriture</button>
+      <div className="alldata">
+        <div className="rent-head">
+          <h3>Profitabilité totale</h3>
+          <div className="rent-actions">
+            <button className="btn-blue" onClick={() => setShowEcriture(true)}>+ Nouvelle écriture</button>
+          </div>
         </div>
-        <div className="kpi-row">
-          <div className="kpi"><span>Dépenses prop firm</span><b className="neg">{depenses.toFixed(2)} $</b></div>
-          <div className="kpi"><span>Gain en compte réel</span><b>{gainReel.toFixed(2)} $</b></div>
-          <div className="kpi"><span>Réussite des challenges</span><b>0 %</b></div>
-          <div className="kpi"><span>Gains retirés</span><b>{gainsRetires.toFixed(2)} $</b></div>
-          <div className="kpi hl"><span>Résultat net</span><b className={totalProfit >= 0 ? 'pos' : 'neg'}>{totalProfit.toFixed(2)} $</b></div>
+        <div className="profit-kpis">
+          <div className="kpi"><div className="kpi-label">Dépenses prop firm</div><div className="kpi-value neg">{depenses.toFixed(2)} $</div></div>
+          <div className="kpi"><div className="kpi-label">Gain en compte réel</div><div className="kpi-value">{gainReel.toFixed(2)} $</div></div>
+          <div className="kpi"><div className="kpi-label">Réussite des challenges</div><div className="kpi-value">0 %</div></div>
+          <div className="kpi"><div className="kpi-label">Gains retirés</div><div className="kpi-value">{gainsRetires.toFixed(2)} $</div></div>
+          <div className="kpi hl"><div className="kpi-label">Résultat net</div><div className={`kpi-value ${totalProfit >= 0 ? 'pos' : 'neg'}`}>{totalProfit.toFixed(2)} $</div></div>
         </div>
+        <div className="kpi-foot">{ecritures.length} écriture(s) enregistrée(s)</div>
 
-        <div className="sb-mute">{ecritures.length} écriture(s) enregistrée(s)</div>
         {ecritures.length > 0 && (
           <table className="ecritures-table">
             <thead>
@@ -173,7 +183,7 @@ export default function ComptesPage({ onNavigate }: Props) {
                 <th>Nature</th>
                 <th>Compte</th>
                 <th>Firme</th>
-                <th>Montant</th>
+                <th className="r">Montant</th>
                 <th>Note</th>
                 <th></th>
               </tr>
@@ -185,10 +195,10 @@ export default function ComptesPage({ onNavigate }: Props) {
                   <td>{e.nature}</td>
                   <td>{accountName(e.accountId)}</td>
                   <td>{e.firm}</td>
-                  <td className={e.montant >= 0 ? 'pos' : 'neg'}>{e.montant.toFixed(2)} {e.devise === 'EUR' ? '€' : '$'}</td>
+                  <td className={`r ${e.montant >= 0 ? 'pos' : 'neg'}`}>{e.montant.toFixed(2)} {e.devise === 'EUR' ? '€' : '$'}</td>
                   <td>{e.note}</td>
                   <td>
-                    <button className="btn-ghost" onClick={() => {
+                    <button className="btn" onClick={() => {
                       if (window.confirm('Supprimer cette écriture ?')) removeEcriture(e.id)
                     }}>Supprimer</button>
                   </td>
@@ -249,41 +259,39 @@ function AddAccountModal({ onClose, onSave }: {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-head">
-          <h3>Nouveau compte</h3>
-        </div>
+        <div className="modal-head">Nouveau compte</div>
         <div className="modal-body">
-          <label className="field">
-            <span>Nom du compte</span>
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="Ex : Topstep 50k #1" />
-          </label>
-          <label className="field">
-            <span>Firme</span>
-            <select value={firm} onChange={e => setFirm(e.target.value)}>
+          <div className="modal-field full">
+            <label>Nom du compte</label>
+            <input className="input" value={name} onChange={e => setName(e.target.value)} placeholder="Ex : Topstep 50k #1" />
+          </div>
+          <div className="modal-field">
+            <label>Firme</label>
+            <select className="input" value={firm} onChange={e => setFirm(e.target.value)}>
               {FIRMS.map(f => <option key={f} value={f}>{f}</option>)}
             </select>
-          </label>
-          <label className="field">
-            <span>Login</span>
-            <input value={login} onChange={e => setLogin(e.target.value)} placeholder="Optionnel" />
-          </label>
-          <label className="field">
-            <span>Type</span>
-            <select value={type} onChange={e => setType(e.target.value as AccountType)}>
+          </div>
+          <div className="modal-field">
+            <label>Login</label>
+            <input className="input" value={login} onChange={e => setLogin(e.target.value)} placeholder="Optionnel" />
+          </div>
+          <div className="modal-field">
+            <label>Type</label>
+            <select className="input" value={type} onChange={e => setType(e.target.value as AccountType)}>
               {ACCOUNT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
-          </label>
-          <label className="field">
-            <span>Taille du compte</span>
-            <select value={size} onChange={e => setSize(Number(e.target.value))}>
+          </div>
+          <div className="modal-field">
+            <label>Taille du compte</label>
+            <select className="input" value={size} onChange={e => setSize(Number(e.target.value))}>
               {SIZES.map(s => <option key={s} value={s}>{s.toLocaleString('fr-FR')} $</option>)}
             </select>
-          </label>
+          </div>
         </div>
         <div className="modal-foot">
-          <button className="btn-ghost" onClick={onClose}>Annuler</button>
+          <button className="btn" onClick={onClose}>Annuler</button>
           <button className="btn-blue" onClick={submit} disabled={!canSave}>Enregistrer</button>
         </div>
       </div>
@@ -321,52 +329,50 @@ function EcritureModal({ accounts, defaultAccountId, onClose, onSave }: {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-head">
-          <h3>Nouvelle écriture</h3>
-        </div>
+        <div className="modal-head">Nouvelle écriture</div>
         <div className="modal-body">
-          <label className="field">
-            <span>Nature</span>
-            <select value={nature} onChange={e => setNature(e.target.value as EcritureNature)}>
+          <div className="modal-field">
+            <label>Nature</label>
+            <select className="input" value={nature} onChange={e => setNature(e.target.value as EcritureNature)}>
               {NATURES.map(n => <option key={n} value={n}>{n}</option>)}
             </select>
-          </label>
-          <label className="field">
-            <span>Date</span>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} />
-          </label>
-          <label className="field">
-            <span>Compte</span>
-            <select value={accountId} onChange={e => onAccountChange(e.target.value)}>
+          </div>
+          <div className="modal-field">
+            <label>Date</label>
+            <input className="input" type="date" value={date} onChange={e => setDate(e.target.value)} />
+          </div>
+          <div className="modal-field">
+            <label>Compte</label>
+            <select className="input" value={accountId} onChange={e => onAccountChange(e.target.value)}>
               {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
-          </label>
-          <label className="field">
-            <span>Firme</span>
-            <select value={firm} onChange={e => setFirm(e.target.value)}>
+          </div>
+          <div className="modal-field">
+            <label>Firme</label>
+            <select className="input" value={firm} onChange={e => setFirm(e.target.value)}>
               {FIRMS.map(f => <option key={f} value={f}>{f}</option>)}
             </select>
-          </label>
-          <label className="field">
-            <span>Montant</span>
-            <input value={montant} onChange={e => setMontant(e.target.value)} placeholder="Ex : 165 ou -165" inputMode="decimal" />
-          </label>
-          <label className="field">
-            <span>Devise</span>
-            <select value={devise} onChange={e => setDevise(e.target.value)}>
+          </div>
+          <div className="modal-field">
+            <label>Montant</label>
+            <input className="input" value={montant} onChange={e => setMontant(e.target.value)} placeholder="Ex : 165 ou -165" inputMode="decimal" />
+          </div>
+          <div className="modal-field">
+            <label>Devise</label>
+            <select className="input" value={devise} onChange={e => setDevise(e.target.value)}>
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
             </select>
-          </label>
-          <label className="field">
-            <span>Note</span>
-            <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Optionnel" rows={3} />
-          </label>
+          </div>
+          <div className="modal-field full">
+            <label>Note</label>
+            <textarea className="input" value={note} onChange={e => setNote(e.target.value)} placeholder="Optionnel" rows={3} />
+          </div>
         </div>
         <div className="modal-foot">
-          <button className="btn-ghost" onClick={onClose}>Annuler</button>
+          <button className="btn" onClick={onClose}>Annuler</button>
           <button className="btn-blue" onClick={submit} disabled={!canSave}>Enregistrer</button>
         </div>
       </div>
@@ -388,21 +394,28 @@ function AccountCard({ account, pnl, status, daysLeft, isActive, onSelect, onMov
   const dot = status === 'actif' ? '#2ecc71' : status === 'bientot' ? '#f1c40f' : '#7f8c8d'
   const showAlert = status === 'bientot' && daysLeft !== null && daysLeft <= ALERT_DAYS_LEFT
   return (
-    <div className={isActive ? 'acct-card active' : 'acct-card'} onClick={onSelect}>
-      <div className="acct-card-head">
-        <span className="dot" style={{ background: dot }} />
-        <b>{account.name}</b>
+    <div className="acct-row">
+      <div className={isActive ? 'acct-card active' : 'acct-card'} onClick={onSelect}>
+        <div className="acct-card-top">
+          <div className="acct-card-ico">🏦</div>
+          <div className="acct-card-main">
+            <div className="acct-card-bal">{account.size.toLocaleString('fr-FR')} $</div>
+            <div className="acct-card-sub">{account.name}{account.login ? ` · ${account.login}` : ''}</div>
+          </div>
+          <span className="acct-card-dot" style={{ background: dot }} />
+        </div>
+        <div className="acct-card-foot">
+          <span className="acct-card-status">{account.firm ?? account.type}</span>
+          <span className={pnl >= 0 ? 'pos' : 'neg'}>{pnl >= 0 ? '+' : ''}{pnl.toFixed(2)} $</span>
+        </div>
+        {showAlert && (
+          <div className="note">⚠ Inactivité dans {Math.ceil(daysLeft!)} jour(s) — prends une position</div>
+        )}
       </div>
-      <div className="sb-mute">{account.firm ?? account.type}{account.login ? ` · ${account.login}` : ''}</div>
-      <div>{account.size.toLocaleString('fr-FR')} $</div>
-      <div className={pnl >= 0 ? 'pos' : 'neg'}>{pnl >= 0 ? '+' : ''}{pnl.toFixed(2)} $</div>
-      {showAlert && (
-        <div className="alert">⚠ Inactivité dans {Math.ceil(daysLeft!)} jour(s) — prends une position</div>
-      )}
-      <div className="acct-actions" onClick={e => e.stopPropagation()}>
-        <button className="btn-ghost" onClick={onMoveUp}>↑</button>
-        <button className="btn-ghost" onClick={onMoveDown}>↓</button>
-        <button className="btn-ghost" onClick={onArchive}>{account.archived ? 'Désarchiver' : 'Archiver'}</button>
+      <div className="acct-card-actions" onClick={e => e.stopPropagation()}>
+        <button className="acct-side-btn" onClick={onMoveUp} title="Monter">↑</button>
+        <button className="acct-side-btn" onClick={onMoveDown} title="Descendre">↓</button>
+        <button className="acct-side-btn" onClick={onArchive} title={account.archived ? 'Désarchiver' : 'Archiver'}>{account.archived ? '↺' : '🗄'}</button>
       </div>
     </div>
   )
