@@ -44,6 +44,8 @@ export default function ComptesPage({ onNavigate }: Props) {
   const activeId = useStore(s => s.activeAccountId)
   const setActive = useStore(s => s.setActiveAccount)
   const addAccount = useStore(s => s.addAccount)
+  const moveAccount = useStore(s => s.moveAccount)
+  const toggleArchive = useStore(s => s.toggleArchive)
   const addEcriture = useStore(s => s.addEcriture)
   const removeEcriture = useStore(s => s.removeEcriture)
   const [tab, setTab] = useState<Tab>('Tous')
@@ -55,7 +57,10 @@ export default function ComptesPage({ onNavigate }: Props) {
   const rows = useMemo(() => accounts.map(a => {
     const own = trades.filter(t => t.accountId === a.id || (!t.accountId && a.id === 'default'))
     const last = lastTradeTime(own)
-    return { account: a, trades: own, ...statusOf(last, now) }
+    const computed = statusOf(last, now)
+    // Un compte archivé est forcé dans la catégorie Inactifs
+    const status: Status = a.archived ? 'inactif' : computed.status
+    return { account: a, trades: own, ...computed, status }
   }), [accounts, trades, now])
 
   const filtered = rows.filter(r =>
@@ -134,6 +139,9 @@ export default function ComptesPage({ onNavigate }: Props) {
                 daysLeft={r.daysLeft}
                 isActive={activeId === r.account.id}
                 onSelect={() => setActive(r.account.id)}
+                onMoveUp={() => moveAccount(r.account.id, 'up')}
+                onMoveDown={() => moveAccount(r.account.id, 'down')}
+                onArchive={() => toggleArchive(r.account.id)}
               />
             ))}
             <button className="acct-add" onClick={() => setShowAdd(true)}>
@@ -366,13 +374,16 @@ function EcritureModal({ accounts, defaultAccountId, onClose, onSave }: {
   )
 }
 
-function AccountCard({ account, pnl, status, daysLeft, isActive, onSelect }: {
+function AccountCard({ account, pnl, status, daysLeft, isActive, onSelect, onMoveUp, onMoveDown, onArchive }: {
   account: Account
   pnl: number
   status: Status
   daysLeft: number | null
   isActive: boolean
   onSelect: () => void
+  onMoveUp: () => void
+  onMoveDown: () => void
+  onArchive: () => void
 }) {
   const dot = status === 'actif' ? '#2ecc71' : status === 'bientot' ? '#f1c40f' : '#7f8c8d'
   const showAlert = status === 'bientot' && daysLeft !== null && daysLeft <= ALERT_DAYS_LEFT
@@ -388,6 +399,11 @@ function AccountCard({ account, pnl, status, daysLeft, isActive, onSelect }: {
       {showAlert && (
         <div className="alert">⚠ Inactivité dans {Math.ceil(daysLeft!)} jour(s) — prends une position</div>
       )}
+      <div className="acct-actions" onClick={e => e.stopPropagation()}>
+        <button className="btn-ghost" onClick={onMoveUp}>↑</button>
+        <button className="btn-ghost" onClick={onMoveDown}>↓</button>
+        <button className="btn-ghost" onClick={onArchive}>{account.archived ? 'Désarchiver' : 'Archiver'}</button>
+      </div>
     </div>
   )
 }

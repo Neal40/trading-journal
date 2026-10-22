@@ -27,6 +27,8 @@ interface State {
   addAccount: (a: Omit<Account, 'id'>) => void
   updateAccount: (id: string, patch: Partial<Account>) => void
   removeAccount: (id: string) => void
+  moveAccount: (id: string, dir: 'up' | 'down') => void
+  toggleArchive: (id: string) => void
   setActiveAccount: (id: string) => void
   addEcriture: (e: Omit<Ecriture, 'id'>) => void
   removeEcriture: (id: string) => void
@@ -69,6 +71,19 @@ export const useStore = create<State>()(
             activeAccountId: st.activeAccountId === id && accounts[0] ? accounts[0].id : st.activeAccountId,
           }
         }),
+      moveAccount: (id, dir) =>
+        set((st) => {
+          const list = [...st.accounts]
+          const i = list.findIndex((a) => a.id === id)
+          const j = dir === 'up' ? i - 1 : i + 1
+          if (i < 0 || j < 0 || j >= list.length) return {}
+          ;[list[i], list[j]] = [list[j], list[i]]
+          return { accounts: list }
+        }),
+      toggleArchive: (id) =>
+        set((st) => ({
+          accounts: st.accounts.map((a) => (a.id === id ? { ...a, archived: !a.archived } : a)),
+        })),
       setActiveAccount: (id) => set({ activeAccountId: id }),
       addEcriture: (e) =>
         set((st) => ({ ecritures: [...st.ecritures, { ...e, id: crypto.randomUUID() }] })),

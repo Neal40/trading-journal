@@ -35,6 +35,8 @@ export interface Account {
   startBalance: number
   firm?: string
   login?: string
+  ordre?: number
+  archived?: boolean
 }
 
 export type EcritureNature = 'Challenge' | 'Reset' | 'Activation' | 'Autres frais' | 'Payout' | 'Remboursement'
