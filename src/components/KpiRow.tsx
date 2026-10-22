@@ -11,12 +11,12 @@ export function KpiRow({ s }: { s: Stats }) {
     { l: 'Efficience de sortie', v: fmt(effi(s), 1) + '%', c: '' },
   ]
   return (
-    <div className="grid g6">
+    <div className="kpi-bar">
       {items.map(k => (
-        <div className="card kpi" key={k.l}>
-          <div className="title">{k.l}</div>
-          <div className={'v ' + k.c}>{k.v}</div>
-          <div className="s">{k.sub ?? '\u00a0'}</div>
+        <div className="kpi-item" key={k.l}>
+          <div className="kpi-label">{k.l}</div>
+          <div className={'kpi-value ' + k.c}>{k.v}</div>
+          {k.sub && <div className="kpi-sub">{k.sub}</div>}
         </div>
       ))}
     </div>

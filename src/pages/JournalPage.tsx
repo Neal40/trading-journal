@@ -26,12 +26,15 @@ export default function JournalPage() {
 
   return (
     <section>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <div className="page-head">
         <div>
           <h2 style={{ margin: 0 }}>Journal de trading</h2>
           <div className="muted" style={{ fontSize: 12 }}>{label} · {s.n} positions</div>
         </div>
-        <Toolbar />
+        <div className="page-actions">
+          <button className="btn">Rapport PDF</button>
+          <Toolbar />
+        </div>
       </div>
 
       <KpiRow s={s} />
