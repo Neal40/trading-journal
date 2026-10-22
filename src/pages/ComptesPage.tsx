@@ -48,10 +48,12 @@ export default function ComptesPage({ onNavigate }: Props) {
   const moveAccount = useStore(s => s.moveAccount)
   const toggleArchive = useStore(s => s.toggleArchive)
   const addEcriture = useStore(s => s.addEcriture)
+  const updateEcriture = useStore(s => s.updateEcriture)
   const removeEcriture = useStore(s => s.removeEcriture)
   const [tab, setTab] = useState<Tab>('Tous')
   const [showAdd, setShowAdd] = useState(false)
   const [showEcriture, setShowEcriture] = useState(false)
+  const [editing, setEditing] = useState<Ecriture | null>(null)
 
   const now = Date.now()
 
@@ -212,7 +214,7 @@ export default function ComptesPage({ onNavigate }: Props) {
           <h3>Rentabilité</h3>
           <div className="rent-actions">
             <button className="btn" onClick={exportCsv}>Exporter en CSV</button>
-            <button className="btn-blue" onClick={() => setShowEcriture(true)}>+ Ajouter</button>
+            <button className="btn-blue" onClick={() => { setEditing(null); setShowEcriture(true) }}>+ Ajouter</button>
           </div>
         </div>
         <div className="profit-kpis">
@@ -270,7 +272,7 @@ export default function ComptesPage({ onNavigate }: Props) {
                   <td className={`r ${e.montant >= 0 ? 'pos' : 'neg'}`}>{e.montant.toFixed(2)} {e.devise === 'EUR' ? '€' : '$'}</td>
                   <td>{e.note}</td>
                   <td>
-                    <button className="btn" title="Modifier (à venir)" disabled>✎</button>
+                    <button className="btn" title="Modifier" onClick={() => { setEditing(e); setShowEcriture(true) }}>✎</button>
                     <button className="btn" title="Supprimer" onClick={() => {
                       if (window.confirm('Supprimer cette écriture ?')) removeEcriture(e.id)
                     }}>🗑</button>
@@ -298,10 +300,13 @@ export default function ComptesPage({ onNavigate }: Props) {
         <EcritureModal
           accounts={accounts}
           defaultAccountId={activeId}
-          onClose={() => setShowEcriture(false)}
+          initial={editing}
+          onClose={() => { setShowEcriture(false); setEditing(null) }}
           onSave={(e) => {
-            addEcriture(e)
+            if (editing) updateEcriture(editing.id, e)
+            else addEcriture(e)
             setShowEcriture(false)
+            setEditing(null)
           }}
         />
       )}
@@ -374,20 +379,23 @@ function AddAccountModal({ onClose, onSave }: {
   )
 }
 
-function EcritureModal({ accounts, defaultAccountId, onClose, onSave }: {
+type EcriturePayload = { nature: EcritureNature; date: string; accountId: string; firm: string; montant: number; devise: string; note: string }
+
+function EcritureModal({ accounts, defaultAccountId, initial, onClose, onSave }: {
   accounts: Account[]
   defaultAccountId: string
+  initial: Ecriture | null
   onClose: () => void
-  onSave: (e: { nature: EcritureNature; date: string; accountId: string; firm: string; montant: number; devise: string; note: string }) => void
+  onSave: (e: EcriturePayload) => void
 }) {
   const initialAccount = accounts.find(a => a.id === defaultAccountId) ?? accounts[0]
-  const [nature, setNature] = useState<EcritureNature>('Challenge')
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
-  const [accountId, setAccountId] = useState<string>(initialAccount?.id ?? '')
-  const [firm, setFirm] = useState<string>(initialAccount?.firm ?? 'Apex')
-  const [montant, setMontant] = useState<string>('')
-  const [devise, setDevise] = useState('USD')
-  const [note, setNote] = useState('')
+  const [nature, setNature] = useState<EcritureNature>(initial?.nature ?? 'Challenge')
+  const [date, setDate] = useState(initial?.date ?? new Date().toISOString().slice(0, 10))
+  const [accountId, setAccountId] = useState<string>(initial?.accountId ?? initialAccount?.id ?? '')
+  const [firm, setFirm] = useState<string>(initial?.firm ?? initialAccount?.firm ?? 'Apex')
+  const [montant, setMontant] = useState<string>(initial ? String(initial.montant) : '')
+  const [devise, setDevise] = useState(initial?.devise ?? 'USD')
+  const [note, setNote] = useState(initial?.note ?? '')
 
   const montantNum = Number(montant.replace(',', '.'))
   const canSave = accountId !== '' && montant.trim() !== '' && !Number.isNaN(montantNum)
@@ -406,7 +414,7 @@ function EcritureModal({ accounts, defaultAccountId, onClose, onSave }: {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-head">Nouvelle écriture</div>
+        <div className="modal-head">{initial ? 'Modifier l\'écriture' : 'Nouvelle écriture'}</div>
         <div className="modal-body">
           <div className="modal-field">
             <label>Nature</label>
