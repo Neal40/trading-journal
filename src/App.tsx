@@ -1,45 +1,41 @@
-import { useMemo } from 'react'
-import { KpiRow } from './components/KpiRow'
-import { PerformanceChart } from './components/PerformanceChart'
-import { SocialRadar } from './components/SocialRadar'
-import { WinrateGauge } from './components/WinrateGauge'
-import { RewardRisk } from './components/RewardRisk'
-import { DrawdownChart } from './components/DrawdownChart'
-import { DurationScatter } from './components/DurationScatter'
-import { ReturnChart } from './components/ReturnChart'
-import { RiskDistribution } from './components/RiskDistribution'
-import { SharpePanel } from './components/SharpePanel'
-import { MaeMfeChart } from './components/MaeMfeChart'
-import GainCalendar from './components/GainCalendar'
-import TimeHeatmap from './components/TimeHeatmap'
-import FeesSummary from './components/FeesSummary'
-import SymbolPerformance from './components/SymbolPerformance'
-import PositionsTable from './components/PositionsTable'
-import ImportPanel from './components/ImportPanel'
-import { Toolbar } from './components/Toolbar'
-import { useStore } from './store/useStore'
-import { computeStats, filterPeriod } from './lib/stats'
-import './lib/chart'
+import { useState } from 'react'
+import ComptesPage from './pages/ComptesPage'
+import JournalPage from './pages/JournalPage'
+import FacturesPage from './pages/FacturesPage'
+
+type PageKey = 'comptes' | 'journal' | 'factures'
+
+const MENU: { key: PageKey; label: string }[] = [
+  { key: 'comptes', label: 'Comptes' },
+  { key: 'journal', label: 'Journal de trading' },
+  { key: 'factures', label: 'Factures' },
+]
 
 export default function App() {
-  const trades = useStore(s => s.trades)
-  const period = useStore(s => s.period)
-  const s = useMemo(() => computeStats(filterPeriod(trades, period)), [trades, period])
+  const [page, setPage] = useState<PageKey>('journal')
 
   return (
-    <div className="app">
-      <header className="top">
-        <h1>Trading Journal</h1>
-        <Toolbar />
-      </header>
-      <KpiRow s={s} />
-      <div className="grid g2"><PerformanceChart s={s} /><SocialRadar s={s} /></div>
-      <div className="grid g3"><DrawdownChart s={s} /><RewardRisk s={s} /><WinrateGauge s={s} /></div>
-      <div className="grid g2"><ReturnChart s={s} /><DurationScatter s={s} /></div>
-      <div className="grid g3"><RiskDistribution s={s} /><SharpePanel s={s} /><MaeMfeChart s={s} /></div>
-      <div className="grid g2"><GainCalendar /><TimeHeatmap /></div>
-      <div className="grid g3"><FeesSummary /><SymbolPerformance /><ImportPanel /></div>
-      <PositionsTable />
+    <div className="layout">
+      <aside className="sidebar">
+        <div className="logo">TJ</div>
+        <div className="menu-title">MENU PRINCIPAL</div>
+        <nav>
+          {MENU.map(item => (
+            <button
+              key={item.key}
+              className={page === item.key ? 'menu-item active' : 'menu-item'}
+              onClick={() => setPage(item.key)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      </aside>
+      <main className="content">
+        {page === 'comptes' && <ComptesPage />}
+        {page === 'journal' && <JournalPage />}
+        {page === 'factures' && <FacturesPage />}
+      </main>
     </div>
   )
 }
