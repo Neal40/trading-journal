@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useStore } from '../store/useStore'
 import { ALL_ACCOUNT_ID, NATURES } from '../types'
-import type { Account, AccountType, EcritureNature, Trade } from '../types'
+import type { Account, AccountType, EcritureNature, Trade, Ecriture } from '../types'
 import type { PageKey } from '../components/Sidebar'
 
 const WARN_DAYS = 23
@@ -30,6 +30,9 @@ function statusOf(last: number | null, now: number): { status: Status; daysSince
   return { status: 'actif', daysSince, daysLeft }
 }
 
+// Dépenses = Challenge, Reset, Activation, Autres frais (négatif)
+const DEPENSE_NATURES: EcritureNature[] = ['Challenge', 'Reset', 'Activation', 'Autres frais']
+
 interface Props {
   onNavigate: (p: PageKey) => void
 }
@@ -42,6 +45,7 @@ export default function ComptesPage({ onNavigate }: Props) {
   const setActive = useStore(s => s.setActiveAccount)
   const addAccount = useStore(s => s.addAccount)
   const addEcriture = useStore(s => s.addEcriture)
+  const removeEcriture = useStore(s => s.removeEcriture)
   const [tab, setTab] = useState<Tab>('Tous')
   const [showAdd, setShowAdd] = useState(false)
   const [showEcriture, setShowEcriture] = useState(false)
@@ -78,10 +82,19 @@ export default function ComptesPage({ onNavigate }: Props) {
   const actifsCount = rows.filter(r => r.status === 'actif').length
   const inactifsCount = rows.length - actifsCount
 
+  // Profitabilité totale, calculée sur les écritures
+  const sumNature = (natures: EcritureNature[]) =>
+    ecritures.filter(e => natures.includes(e.nature)).reduce((s, e) => s + e.montant, 0)
+  const depenses = -Math.abs(sumNature(DEPENSE_NATURES))
+  const gainReel = sumNature(['Remboursement'])
+  const gainsRetires = sumNature(['Payout'])
+
   const openAllData = () => {
     setActive(ALL_ACCOUNT_ID)
     onNavigate('journal')
   }
+
+  const accountName = (id: string) => accounts.find(a => a.id === id)?.name ?? '—'
 
   return (
     <section className="comptes">
@@ -136,13 +149,46 @@ export default function ComptesPage({ onNavigate }: Props) {
           <button className="btn-blue" onClick={() => setShowEcriture(true)}>+ Nouvelle écriture</button>
         </div>
         <div className="kpi-row">
-          <div className="kpi"><span>Dépenses prop firm</span><b className="neg">0,00 $</b></div>
-          <div className="kpi"><span>Gain en compte réel</span><b>0,00 $</b></div>
+          <div className="kpi"><span>Dépenses prop firm</span><b className="neg">{depenses.toFixed(2)} $</b></div>
+          <div className="kpi"><span>Gain en compte réel</span><b>{gainReel.toFixed(2)} $</b></div>
           <div className="kpi"><span>Réussite des challenges</span><b>0 %</b></div>
-          <div className="kpi"><span>Gains retirés</span><b>0,00 $</b></div>
+          <div className="kpi"><span>Gains retirés</span><b>{gainsRetires.toFixed(2)} $</b></div>
           <div className="kpi hl"><span>Résultat net</span><b className={totalProfit >= 0 ? 'pos' : 'neg'}>{totalProfit.toFixed(2)} $</b></div>
         </div>
+
         <div className="sb-mute">{ecritures.length} écriture(s) enregistrée(s)</div>
+        {ecritures.length > 0 && (
+          <table className="ecritures-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Nature</th>
+                <th>Compte</th>
+                <th>Firme</th>
+                <th>Montant</th>
+                <th>Note</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...ecritures].sort((a, b) => b.date.localeCompare(a.date)).map((e: Ecriture) => (
+                <tr key={e.id}>
+                  <td>{e.date}</td>
+                  <td>{e.nature}</td>
+                  <td>{accountName(e.accountId)}</td>
+                  <td>{e.firm}</td>
+                  <td className={e.montant >= 0 ? 'pos' : 'neg'}>{e.montant.toFixed(2)} {e.devise === 'EUR' ? '€' : '$'}</td>
+                  <td>{e.note}</td>
+                  <td>
+                    <button className="btn-ghost" onClick={() => {
+                      if (window.confirm('Supprimer cette écriture ?')) removeEcriture(e.id)
+                    }}>Supprimer</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {showAdd && (
