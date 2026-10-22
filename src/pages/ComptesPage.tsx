@@ -30,8 +30,9 @@ function statusOf(last: number | null, now: number): { status: Status; daysSince
   return { status: 'actif', daysSince, daysLeft }
 }
 
-// Dépenses = Challenge, Reset, Activation, Autres frais (négatif)
+// Dépenses = Challenge, Reset, Activation, Autres frais
 const DEPENSE_NATURES: EcritureNature[] = ['Challenge', 'Reset', 'Activation', 'Autres frais']
+const ENCAISSE_NATURES: EcritureNature[] = ['Remboursement', 'Payout']
 
 interface Props {
   onNavigate: (p: PageKey) => void
@@ -58,7 +59,6 @@ export default function ComptesPage({ onNavigate }: Props) {
     const own = trades.filter(t => t.accountId === a.id || (!t.accountId && a.id === 'default'))
     const last = lastTradeTime(own)
     const computed = statusOf(last, now)
-    // Un compte archivé est forcé dans la catégorie Inactifs
     const status: Status = a.archived ? 'inactif' : computed.status
     return { account: a, trades: own, ...computed, status }
   }), [accounts, trades, now])
@@ -87,12 +87,34 @@ export default function ComptesPage({ onNavigate }: Props) {
   const actifsCount = rows.filter(r => r.status === 'actif').length
   const inactifsCount = rows.length - actifsCount
 
-  // Profitabilité totale, calculée sur les écritures
   const sumNature = (natures: EcritureNature[]) =>
     ecritures.filter(e => natures.includes(e.nature)).reduce((s, e) => s + e.montant, 0)
   const depenses = -Math.abs(sumNature(DEPENSE_NATURES))
   const gainReel = sumNature(['Remboursement'])
   const gainsRetires = sumNature(['Payout'])
+
+  // Rentabilité globale
+  const depense = Math.abs(depenses)
+  const encaisse = sumNature(ENCAISSE_NATURES)
+  const beneficeNet = encaisse - depense
+  const rentabilite = depense ? (beneficeNet / depense) * 100 : 0
+
+  // Rentabilité par firme
+  const firmRows = useMemo(() => {
+    const map = new Map<string, { depense: number; encaisse: number }>()
+    ecritures.forEach(e => {
+      const cur = map.get(e.firm) ?? { depense: 0, encaisse: 0 }
+      if (DEPENSE_NATURES.includes(e.nature)) cur.depense += Math.abs(e.montant)
+      if (ENCAISSE_NATURES.includes(e.nature)) cur.encaisse += e.montant
+      map.set(e.firm, cur)
+    })
+    return Array.from(map.entries()).map(([firm, v]) => ({
+      firm,
+      ...v,
+      net: v.encaisse - v.depense,
+      rent: v.depense ? ((v.encaisse - v.depense) / v.depense) * 100 : 0,
+    }))
+  }, [ecritures])
 
   const openAllData = () => {
     setActive(ALL_ACCOUNT_ID)
@@ -100,6 +122,19 @@ export default function ComptesPage({ onNavigate }: Props) {
   }
 
   const accountName = (id: string) => accounts.find(a => a.id === id)?.name ?? '—'
+
+  const exportCsv = () => {
+    const header = ['Date', 'Nature', 'Compte', 'Firme', 'Montant', 'Devise', 'Note']
+    const lines = ecritures.map(e => [e.date, e.nature, accountName(e.accountId), e.firm, e.montant, e.devise, e.note]
+      .map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(';'))
+    const blob = new Blob([[header.join(';'), ...lines].join('\n')], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'rentabilite.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <section className="comptes">
@@ -162,9 +197,6 @@ export default function ComptesPage({ onNavigate }: Props) {
       <div className="alldata">
         <div className="rent-head">
           <h3>Profitabilité totale</h3>
-          <div className="rent-actions">
-            <button className="btn-blue" onClick={() => setShowEcriture(true)}>+ Nouvelle écriture</button>
-          </div>
         </div>
         <div className="profit-kpis">
           <div className="kpi"><div className="kpi-label">Dépenses prop firm</div><div className="kpi-value neg">{depenses.toFixed(2)} $</div></div>
@@ -173,16 +205,56 @@ export default function ComptesPage({ onNavigate }: Props) {
           <div className="kpi"><div className="kpi-label">Gains retirés</div><div className="kpi-value">{gainsRetires.toFixed(2)} $</div></div>
           <div className="kpi hl"><div className="kpi-label">Résultat net</div><div className={`kpi-value ${totalProfit >= 0 ? 'pos' : 'neg'}`}>{totalProfit.toFixed(2)} $</div></div>
         </div>
-        <div className="kpi-foot">{ecritures.length} écriture(s) enregistrée(s)</div>
+      </div>
 
-        {ecritures.length > 0 && (
+      <div className="alldata">
+        <div className="rent-head">
+          <h3>Rentabilité</h3>
+          <div className="rent-actions">
+            <button className="btn" onClick={exportCsv}>Exporter en CSV</button>
+            <button className="btn-blue" onClick={() => setShowEcriture(true)}>+ Ajouter</button>
+          </div>
+        </div>
+        <div className="profit-kpis">
+          <div className="kpi"><div className="kpi-label">Dépensé</div><div className="kpi-value">{depense.toFixed(2)} $</div></div>
+          <div className="kpi"><div className="kpi-label">Encaissé</div><div className="kpi-value">{encaisse.toFixed(2)} $</div></div>
+          <div className="kpi"><div className="kpi-label">Bénéfice net</div><div className={`kpi-value ${beneficeNet >= 0 ? 'pos' : 'neg'}`}>{beneficeNet.toFixed(2)} $</div></div>
+          <div className="kpi"><div className="kpi-label">Rentabilité</div><div className={`kpi-value ${rentabilite >= 0 ? 'pos' : 'neg'}`}>{rentabilite.toFixed(0)} %</div></div>
+        </div>
+
+        <div className="rent-head"><h3>Par firme</h3></div>
+        <table className="ecritures-table">
+          <thead>
+            <tr>
+              <th>Firme</th>
+              <th className="r">Dépensé</th>
+              <th className="r">Encaissé</th>
+              <th className="r">Bénéfice net</th>
+              <th className="r">Rentabilité</th>
+            </tr>
+          </thead>
+          <tbody>
+            {firmRows.map(f => (
+              <tr key={f.firm}>
+                <td>{f.firm}</td>
+                <td className="r">{f.depense.toFixed(2)} $</td>
+                <td className="r">{f.encaisse.toFixed(2)} $</td>
+                <td className={`r ${f.net >= 0 ? 'pos' : 'neg'}`}>{f.net.toFixed(2)} $</td>
+                <td className={`r ${f.rent >= 0 ? 'pos' : 'neg'}`}>{f.rent.toFixed(0)} %</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div className="rent-head"><h3>Écritures</h3></div>
+        {ecritures.length > 0 ? (
           <table className="ecritures-table">
             <thead>
               <tr>
                 <th>Date</th>
                 <th>Nature</th>
-                <th>Compte</th>
                 <th>Firme</th>
+                <th>Compte</th>
                 <th className="r">Montant</th>
                 <th>Note</th>
                 <th></th>
@@ -193,19 +265,22 @@ export default function ComptesPage({ onNavigate }: Props) {
                 <tr key={e.id}>
                   <td>{e.date}</td>
                   <td>{e.nature}</td>
-                  <td>{accountName(e.accountId)}</td>
                   <td>{e.firm}</td>
+                  <td>{accountName(e.accountId)}</td>
                   <td className={`r ${e.montant >= 0 ? 'pos' : 'neg'}`}>{e.montant.toFixed(2)} {e.devise === 'EUR' ? '€' : '$'}</td>
                   <td>{e.note}</td>
                   <td>
-                    <button className="btn" onClick={() => {
+                    <button className="btn" title="Modifier (à venir)" disabled>✎</button>
+                    <button className="btn" title="Supprimer" onClick={() => {
                       if (window.confirm('Supprimer cette écriture ?')) removeEcriture(e.id)
-                    }}>Supprimer</button>
+                    }}>🗑</button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        ) : (
+          <div className="kpi-foot">0 écriture(s) enregistrée(s)</div>
         )}
       </div>
 
