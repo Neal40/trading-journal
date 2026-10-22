@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Trade, PeriodKey, Account } from '../types'
+import { ALL_ACCOUNT_ID } from '../types'
 import { generateDemo } from '../data/demo'
 import type { TradeSource } from '../data/source'
 

@@ -1,7 +1,7 @@
 export interface Trade {
   id: string
-  openTime: string        // ISO
-  closeTime: string       // ISO
+  openTime: string
+  closeTime: string
   symbol: string
   ticket: string
   type: 'Buy' | 'Sell'
@@ -10,17 +10,17 @@ export interface Trade {
   sl: number | null
   tp: number | null
   exit: number
-  profit: number          // en devise
+  profit: number
   commission: number
-  r: number               // résultat en R
-  mae: number             // <= 0 (devise)
-  mfe: number             // >= 0 (devise)
+  r: number
+  mae: number
+  mfe: number
   tags: string[]
   images: string[]
-  reasons: string[]                 // raisons hors plan
-  rulesRespected: boolean | null    // règles respectées (OUI / NON)
-  comment: string                   // commentaire libre
-  accountId?: string                // compte auquel appartient le trade
+  reasons: string[]
+  rulesRespected: boolean | null
+  comment: string
+  accountId?: string
 }
 
 export type PeriodKey = 'ALL' | '1J' | '1S' | '1M' | '1A'
@@ -29,11 +29,15 @@ export type AccountType = 'Funded' | 'Challenge' | 'Paper' | 'Review' | 'Backtes
 
 export interface Account {
   id: string
-  name: string            // ex. "Topstep 50k"
+  name: string
   type: AccountType
-  size: number            // taille du compte en devise, ex. 50000
-  startBalance: number    // solde de départ utilisé pour les stats
+  size: number
+  startBalance: number
+  firm?: string
+  login?: string
 }
+
+export const ALL_ACCOUNT_ID = 'all'
 
 export const REASONS = [
   'FOMO',

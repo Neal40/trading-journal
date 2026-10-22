@@ -1,5 +1,6 @@
 import { useStore } from '../store/useStore'
 import { computeStats, filterPeriod } from '../lib/stats'
+import { ALL_ACCOUNT_ID } from '../types'
 import { Toolbar } from '../components/Toolbar'
 import { KpiRow } from '../components/KpiRow'
 import { PerformanceChart } from '../components/PerformanceChart'
@@ -22,19 +23,35 @@ export default function JournalPage() {
   const trades = useStore(s => s.trades)
   const period = useStore(s => s.period)
   const label = useStore(s => s.sourceLabel)
-  const s = computeStats(filterPeriod(trades, period))
+  const accounts = useStore(s => s.accounts)
+  const activeId = useStore(s => s.activeAccountId)
+  const setActive = useStore(s => s.setActiveAccount)
+
+  const scoped = activeId === ALL_ACCOUNT_ID
+    ? trades
+    : trades.filter(t => t.accountId === activeId || (!t.accountId && activeId === 'default'))
+  const s = computeStats(filterPeriod(scoped, period))
+
+  const active = accounts.find(a => a.id === activeId)
+  const title = activeId === ALL_ACCOUNT_ID ? 'Devises mixtes' : active?.name ?? label
+  const subtitle = activeId === ALL_ACCOUNT_ID ? 'All Data' : active?.firm ?? active?.type ?? ''
+
+  const switchAccount = () => {
+    const ids = [ALL_ACCOUNT_ID, ...accounts.map(a => a.id)]
+    const next = ids[(ids.indexOf(activeId) + 1) % ids.length]
+    setActive(next)
+  }
 
   return (
     <section className="journal">
-      {/* Bandeau compte */}
       <div className="acct">
         <div className="acct-ico">🏛</div>
         <div className="acct-info">
-          <div><b>{label}</b> <span className="sb-mute">Login :</span></div>
-          <div className="pos" style={{ fontSize: 12 }}>Funded - Statut : Inconnu</div>
-          <div className="neg" style={{ fontSize: 12 }}>{s.n} positions</div>
+          <div><b>{title}</b> <span className="sb-mute">{subtitle}</span></div>
+          {active?.login && <div className="sb-mute" style={{ fontSize: 12 }}>Login : {active.login}</div>}
+          <div className="sb-mute" style={{ fontSize: 12 }}>{s.n} positions</div>
         </div>
-        <button className="btn-blue">Changer de compte</button>
+        <button className="btn-blue" onClick={switchAccount}>Changer de compte</button>
       </div>
 
       <div className="page-actions right">
@@ -44,49 +61,40 @@ export default function JournalPage() {
 
       <KpiRow s={s} />
 
-      {/* 1. Graphique de performance + Hexagone social */}
       <div className="grid g-main">
         <PerformanceChart s={s} />
         <SocialRadar s={s} />
       </div>
 
-      {/* 2. Positions (pleine largeur) */}
       <PositionsTable />
 
-      {/* 3. Winrate + Rendement */}
       <div className="grid g-main">
         <WinrateGauge s={s} />
         <ReturnChart s={s} />
       </div>
 
-      {/* 4. Drawdown + Reward/Risk */}
       <div className="grid g-main">
         <DrawdownChart s={s} />
         <RewardRisk s={s} />
       </div>
 
-      {/* 5. Sharpe + MAE/MFE */}
       <div className="grid g-side">
         <SharpePanel s={s} />
         <MaeMfeChart s={s} />
       </div>
 
-      {/* 6. Distribution Risk/Reward */}
       <RiskDistribution s={s} />
 
-      {/* 7. Calendrier + Heatmap */}
       <div className="grid g-half">
         <GainCalendar />
         <TimeHeatmap />
       </div>
 
-      {/* 8. Frais + Performance par symbole */}
       <div className="grid g-half">
         <FeesSummary />
         <SymbolPerformance />
       </div>
 
-      {/* 9. Durée x Résultat */}
       <DurationScatter s={s} />
     </section>
   )
