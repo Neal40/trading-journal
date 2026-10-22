@@ -1,5 +1,7 @@
 import type { Trade, PeriodKey } from '../types'
 
+export const START_BALANCE = 100000
+
 const sum = (a: number[]) => a.reduce((x, y) => x + y, 0)
 
 export function filterPeriod(trades: Trade[], p: PeriodKey): Trade[] {
@@ -11,9 +13,9 @@ export function filterPeriod(trades: Trade[], p: PeriodKey): Trade[] {
 
 /**
  * Calcule les statistiques d'un ensemble de trades.
- * @param startBalance solde de départ du compte (issu de la page Comptes)
+ * @param startBalance solde de départ du compte (issu de la page Comptes), 100 000 par défaut
  */
-export function computeStats(trades: Trade[], startBalance: number) {
+export function computeStats(trades: Trade[], startBalance: number = START_BALANCE) {
   const sorted = [...trades].sort((a, b) => +new Date(a.closeTime) - +new Date(b.closeTime))
   const n = sorted.length
   const wins = sorted.filter(t => t.profit > 0)
