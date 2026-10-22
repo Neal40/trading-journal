@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useStore } from '../store/useStore'
-import { ALL_ACCOUNT_ID } from '../types'
-import type { Account, AccountType, Trade } from '../types'
+import { ALL_ACCOUNT_ID, NATURES } from '../types'
+import type { Account, AccountType, EcritureNature, Trade } from '../types'
 import type { PageKey } from '../components/Sidebar'
 
 const WARN_DAYS = 23
@@ -37,11 +37,14 @@ interface Props {
 export default function ComptesPage({ onNavigate }: Props) {
   const accounts = useStore(s => s.accounts)
   const trades = useStore(s => s.trades)
+  const ecritures = useStore(s => s.ecritures)
   const activeId = useStore(s => s.activeAccountId)
   const setActive = useStore(s => s.setActiveAccount)
   const addAccount = useStore(s => s.addAccount)
+  const addEcriture = useStore(s => s.addEcriture)
   const [tab, setTab] = useState<Tab>('Tous')
   const [showAdd, setShowAdd] = useState(false)
+  const [showEcriture, setShowEcriture] = useState(false)
 
   const now = Date.now()
 
@@ -128,14 +131,18 @@ export default function ComptesPage({ onNavigate }: Props) {
       </div>
 
       <div className="card">
-        <h3>PROFITABILITÉ TOTALE</h3>
-        <div className="kpi-row">
-          <div className="kpi"><span>Dépenses prop firm</span><b className="neg">0,00 €</b></div>
-          <div className="kpi"><span>Gain en compte réel</span><b>0,00 €</b></div>
-          <div className="kpi"><span>Réussite des challenges</span><b>0 %</b></div>
-          <div className="kpi"><span>Gains retirés</span><b>0,00 €</b></div>
-          <div className="kpi hl"><span>Résultat net</span><b className={totalProfit >= 0 ? 'pos' : 'neg'}>{totalProfit.toFixed(2)} €</b></div>
+        <div className="card-head">
+          <h3>PROFITABILITÉ TOTALE</h3>
+          <button className="btn-blue" onClick={() => setShowEcriture(true)}>+ Nouvelle écriture</button>
         </div>
+        <div className="kpi-row">
+          <div className="kpi"><span>Dépenses prop firm</span><b className="neg">0,00 $</b></div>
+          <div className="kpi"><span>Gain en compte réel</span><b>0,00 $</b></div>
+          <div className="kpi"><span>Réussite des challenges</span><b>0 %</b></div>
+          <div className="kpi"><span>Gains retirés</span><b>0,00 $</b></div>
+          <div className="kpi hl"><span>Résultat net</span><b className={totalProfit >= 0 ? 'pos' : 'neg'}>{totalProfit.toFixed(2)} $</b></div>
+        </div>
+        <div className="sb-mute">{ecritures.length} écriture(s) enregistrée(s)</div>
       </div>
 
       {showAdd && (
@@ -144,6 +151,18 @@ export default function ComptesPage({ onNavigate }: Props) {
           onSave={(a) => {
             addAccount(a)
             setShowAdd(false)
+          }}
+        />
+      )}
+
+      {showEcriture && (
+        <EcritureModal
+          accounts={accounts}
+          defaultAccountId={activeId}
+          onClose={() => setShowEcriture(false)}
+          onSave={(e) => {
+            addEcriture(e)
+            setShowEcriture(false)
           }}
         />
       )}
@@ -207,6 +226,89 @@ function AddAccountModal({ onClose, onSave }: {
             <select value={size} onChange={e => setSize(Number(e.target.value))}>
               {SIZES.map(s => <option key={s} value={s}>{s.toLocaleString('fr-FR')} $</option>)}
             </select>
+          </label>
+        </div>
+        <div className="modal-foot">
+          <button className="btn-ghost" onClick={onClose}>Annuler</button>
+          <button className="btn-blue" onClick={submit} disabled={!canSave}>Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function EcritureModal({ accounts, defaultAccountId, onClose, onSave }: {
+  accounts: Account[]
+  defaultAccountId: string
+  onClose: () => void
+  onSave: (e: { nature: EcritureNature; date: string; accountId: string; firm: string; montant: number; devise: string; note: string }) => void
+}) {
+  const initialAccount = accounts.find(a => a.id === defaultAccountId) ?? accounts[0]
+  const [nature, setNature] = useState<EcritureNature>('Challenge')
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+  const [accountId, setAccountId] = useState<string>(initialAccount?.id ?? '')
+  const [firm, setFirm] = useState<string>(initialAccount?.firm ?? 'Apex')
+  const [montant, setMontant] = useState<string>('')
+  const [devise, setDevise] = useState('USD')
+  const [note, setNote] = useState('')
+
+  const montantNum = Number(montant.replace(',', '.'))
+  const canSave = accountId !== '' && montant.trim() !== '' && !Number.isNaN(montantNum)
+
+  const onAccountChange = (id: string) => {
+    setAccountId(id)
+    const acc = accounts.find(a => a.id === id)
+    if (acc?.firm) setFirm(acc.firm)
+  }
+
+  const submit = () => {
+    if (!canSave) return
+    onSave({ nature, date, accountId, firm, montant: montantNum, devise, note: note.trim() })
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-head">
+          <h3>Nouvelle écriture</h3>
+        </div>
+        <div className="modal-body">
+          <label className="field">
+            <span>Nature</span>
+            <select value={nature} onChange={e => setNature(e.target.value as EcritureNature)}>
+              {NATURES.map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </label>
+          <label className="field">
+            <span>Date</span>
+            <input type="date" value={date} onChange={e => setDate(e.target.value)} />
+          </label>
+          <label className="field">
+            <span>Compte</span>
+            <select value={accountId} onChange={e => onAccountChange(e.target.value)}>
+              {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </select>
+          </label>
+          <label className="field">
+            <span>Firme</span>
+            <select value={firm} onChange={e => setFirm(e.target.value)}>
+              {FIRMS.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+          </label>
+          <label className="field">
+            <span>Montant</span>
+            <input value={montant} onChange={e => setMontant(e.target.value)} placeholder="Ex : 165 ou -165" inputMode="decimal" />
+          </label>
+          <label className="field">
+            <span>Devise</span>
+            <select value={devise} onChange={e => setDevise(e.target.value)}>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+            </select>
+          </label>
+          <label className="field">
+            <span>Note</span>
+            <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Optionnel" rows={3} />
           </label>
         </div>
         <div className="modal-foot">

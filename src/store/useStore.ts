@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Trade, PeriodKey, Account } from '../types'
-import { ALL_ACCOUNT_ID } from '../types'
+import type { Trade, PeriodKey, Account, Ecriture } from '../types'
 import { generateDemo } from '../data/demo'
 import type { TradeSource } from '../data/source'
 
@@ -19,6 +18,7 @@ interface State {
   sourceLabel: string
   accounts: Account[]
   activeAccountId: string
+  ecritures: Ecriture[]
   setPeriod: (p: PeriodKey) => void
   setTrades: (t: Trade[], label: string) => void
   updateTrade: (id: string, patch: Partial<Trade>) => void
@@ -28,6 +28,8 @@ interface State {
   updateAccount: (id: string, patch: Partial<Account>) => void
   removeAccount: (id: string) => void
   setActiveAccount: (id: string) => void
+  addEcriture: (e: Omit<Ecriture, 'id'>) => void
+  removeEcriture: (id: string) => void
 }
 
 export const useStore = create<State>()(
@@ -38,6 +40,7 @@ export const useStore = create<State>()(
       sourceLabel: 'Données de démo',
       accounts: [DEFAULT_ACCOUNT],
       activeAccountId: DEFAULT_ACCOUNT.id,
+      ecritures: [],
       setPeriod: (period) => set({ period }),
       setTrades: (trades, sourceLabel) => set({ trades, sourceLabel }),
       updateTrade: (id, patch) =>
@@ -67,6 +70,10 @@ export const useStore = create<State>()(
           }
         }),
       setActiveAccount: (id) => set({ activeAccountId: id }),
+      addEcriture: (e) =>
+        set((st) => ({ ecritures: [...st.ecritures, { ...e, id: crypto.randomUUID() }] })),
+      removeEcriture: (id) =>
+        set((st) => ({ ecritures: st.ecritures.filter((e) => e.id !== id) })),
     }),
     { name: 'trading-journal' }
   )

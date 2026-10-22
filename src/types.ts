@@ -37,6 +37,21 @@ export interface Account {
   login?: string
 }
 
+export type EcritureNature = 'Challenge' | 'Reset' | 'Activation' | 'Autres frais' | 'Payout' | 'Remboursement'
+
+export const NATURES: EcritureNature[] = ['Challenge', 'Reset', 'Activation', 'Autres frais', 'Payout', 'Remboursement']
+
+export interface Ecriture {
+  id: string
+  nature: EcritureNature
+  date: string
+  accountId: string
+  firm: string
+  montant: number
+  devise: string
+  note: string
+}
+
 export const ALL_ACCOUNT_ID = 'all'
 
 export const REASONS = [
