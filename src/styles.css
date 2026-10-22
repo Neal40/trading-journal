@@ -133,3 +133,60 @@ body { background: var(--bg); color: var(--text); font-family: 'Poppins', sans-s
 .heat { display: grid; grid-template-columns: 36px repeat(24, 1fr); gap: 2px; }
 .hl { font-size: 9px; color: var(--mute); text-align: center; align-self: center; }
 .hc { aspect-ratio: 1; border-radius: 3px; background: #0f1218; min-height: 14px; }
+
+/* ===== Page Comptes ===== */
+.alldata-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr); gap: 14px; align-items: start; }
+@media (max-width: 1000px) { .alldata-wrap { grid-template-columns: 1fr; } }
+
+.alldata { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+.alldata-title { font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: #c3c9d6; margin-bottom: 12px; }
+.alldata-card { background: #0f131b; border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+.alldata-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.alldata-ico { width: 44px; height: 44px; border-radius: 50%; background: #1a1d24; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.alldata-name { font-size: 15px; font-weight: 600; }
+.alldata-sub { color: var(--mute); font-size: 11px; margin-top: 2px; }
+.alldata-tag { margin-left: auto; color: var(--mute); font-size: 11px; }
+.alldata-rows { display: flex; flex-direction: column; gap: 8px; font-size: 12px; }
+.alldata-row { display: flex; justify-content: space-between; gap: 8px; }
+.alldata-row.bold { font-weight: 600; }
+.alldata-sep { border-top: 1px solid var(--line); margin: 10px 0; }
+.alldata-foot { margin-top: 14px; }
+.alldata-foot .btn-blue { width: 100%; }
+
+.acct-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.acct-tab { background: #12161f; border: 1px solid var(--line); color: var(--mute); border-radius: 6px; padding: 7px 12px; cursor: pointer; font-family: inherit; font-size: 12px; }
+.acct-tab.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.acct-tab:hover:not(.on) { color: var(--text); }
+
+.acct-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.acct-card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.acct-card-top { display: flex; align-items: center; gap: 12px; }
+.acct-card-ico { width: 44px; height: 44px; border-radius: 50%; background: #1a1d24; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.acct-card-main { flex: 1; min-width: 0; }
+.acct-card-bal { font-size: 16px; font-weight: 600; }
+.acct-card-login { color: var(--mute); font-size: 11px; }
+.acct-card-status { font-size: 11px; color: var(--mute); }
+.acct-card-dot { width: 8px; height: 8px; border-radius: 50%; background: #3a4150; flex-shrink: 0; }
+.acct-card-dot.on { background: var(--green); }
+.acct-card-foot { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--mute); }
+.acct-card-actions { display: flex; gap: 4px; }
+.acct-card-actions .btn { padding: 4px 8px; }
+.acct-add { border: 1px dashed var(--line); border-radius: 8px; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--mute); cursor: pointer; background: none; font-family: inherit; font-size: 12px; }
+.acct-add:hover { color: var(--text); border-color: #2a3345; }
+.acct-add .plus { font-size: 22px; }
+
+/* Profitabilité totale */
+.profit-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 8px; }
+@media (max-width: 1100px) { .profit-kpis { grid-template-columns: repeat(2, 1fr); } }
+.kpi.hl { background: #0d1530; border-color: #1a2347; }
+.kpi-sub-l { color: var(--mute); font-size: 11px; margin-top: 4px; }
+.kpi-foot { color: var(--mute); font-size: 11px; margin-top: 10px; }
+
+/* Écritures */
+.ecritures-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.ecritures-table th { text-align: left; color: var(--mute); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.ecritures-table td { padding: 9px 10px; border-bottom: 1px solid var(--line); font-size: 12px; }
+.ecritures-table tr:last-child td { border-bottom: 0; }
+.ecritures-table .r { text-align: right; }
+.ecritures-table .btn { padding: 3px 9px; }
+.ecritures-empty { color: var(--mute); font-size: 12px; padding: 14px 0; }
