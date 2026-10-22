@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import Card from './Card'
-import { Seg } from './Toolbar'
+import { Card, Seg } from './Card'
 import { useStore } from '../store/useStore'
 import { computeStats } from '../lib/stats'
 import { eur } from '../lib/format'

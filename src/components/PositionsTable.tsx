@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import Card from './Card'
+import { Card } from './Card'
 import { useStore } from '../store/useStore'
 import { computeStats } from '../lib/stats'
 import { eur, fmt, cls } from '../lib/format'
@@ -61,7 +61,7 @@ export default function PositionsTable() {
               <tr key={t.id}>
                 <td>{t.closeTime.slice(0, 16).replace('T', ' ')}</td>
                 <td>{t.symbol}</td>
-                <td>{t.side}</td>
+                <td>{t.type}</td>
                 <td className={'r ' + cls(t.profit)}>{eur(t.profit)}</td>
                 <td className={'r ' + cls(t.r)}>{fmt(t.r)}R</td>
               </tr>

@@ -21,7 +21,7 @@ export function PerformanceChart({ s }: { s: Stats }) {
       </div>
       <div className="legend"><span className="pos">PNL Réalisé</span><span className="pos">Max Gain Latent</span><span className="neg">Max DD Latent</span><span className="neg">Moyenne Itinéraire</span></div>
       <div className="chartbox" style={{ height: 340 }}>
-        <Line options={{ ...baseOpts, scales: { x: { grid }, y: { grid, ticks: { callback: v => fmt(+v, 0) } } } } as any}
+        <Line options={{ ...baseOpts, scales: { x: { grid }, y: { grid, ticks: { callback: (v: string | number) => fmt(+v, 0) } } } } as any}
           data={{
             labels: L, datasets: [
               { data: s.hi.slice(st), borderColor: 'transparent', backgroundColor: 'rgba(34,120,60,.45)', fill: '+1', tension: .4, pointRadius: 0 },
