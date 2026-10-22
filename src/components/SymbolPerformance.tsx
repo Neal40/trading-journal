@@ -1,8 +1,8 @@
 import { Bar } from 'react-chartjs-2'
-import Card from './Card'
+import { Card } from './Card'
 import { useStore } from '../store/useStore'
 import { computeStats } from '../lib/stats'
-import { baseOptions } from '../lib/chart'
+import { baseOpts } from '../lib/chart'
 
 export default function SymbolPerformance() {
   const trades = useStore(s => s.trades)
@@ -23,7 +23,7 @@ export default function SymbolPerformance() {
               borderRadius: 4,
             }],
           }}
-          options={{ ...baseOptions, indexAxis: 'y' as const, plugins: { legend: { display: false } } }}
+          options={{ ...baseOpts, indexAxis: 'y' as const } as any}
         />
       </div>
     </Card>
