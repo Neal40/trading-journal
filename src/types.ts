@@ -20,9 +20,20 @@ export interface Trade {
   reasons: string[]                 // raisons hors plan
   rulesRespected: boolean | null    // règles respectées (OUI / NON)
   comment: string                   // commentaire libre
+  accountId?: string                // compte auquel appartient le trade
 }
 
 export type PeriodKey = 'ALL' | '1J' | '1S' | '1M' | '1A'
+
+export type AccountType = 'Funded' | 'Challenge' | 'Paper' | 'Review' | 'Backtest'
+
+export interface Account {
+  id: string
+  name: string            // ex. "Topstep 50k"
+  type: AccountType
+  size: number            // taille du compte en devise, ex. 50000
+  startBalance: number    // solde de départ utilisé pour les stats
+}
 
 export const REASONS = [
   'FOMO',

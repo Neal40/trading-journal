@@ -1,6 +1,5 @@
 import type { Trade, PeriodKey } from '../types'
 
-export const START_BALANCE = 100000
 const sum = (a: number[]) => a.reduce((x, y) => x + y, 0)
 
 export function filterPeriod(trades: Trade[], p: PeriodKey): Trade[] {
@@ -10,7 +9,11 @@ export function filterPeriod(trades: Trade[], p: PeriodKey): Trade[] {
   return trades.filter(t => +new Date(t.closeTime) >= last - days * 86400000)
 }
 
-export function computeStats(trades: Trade[]) {
+/**
+ * Calcule les statistiques d'un ensemble de trades.
+ * @param startBalance solde de départ du compte (issu de la page Comptes)
+ */
+export function computeStats(trades: Trade[], startBalance: number) {
   const sorted = [...trades].sort((a, b) => +new Date(a.closeTime) - +new Date(b.closeTime))
   const n = sorted.length
   const wins = sorted.filter(t => t.profit > 0)
@@ -27,15 +30,15 @@ export function computeStats(trades: Trade[]) {
   })
 
   // Equity + bornes latentes
-  const eq = [START_BALANCE], hi = [START_BALANCE], lo = [START_BALANCE]
-  let run = START_BALANCE
+  const eq = [startBalance], hi = [startBalance], lo = [startBalance]
+  let run = startBalance
   sorted.forEach(t => {
     run += t.profit
     eq.push(run); hi.push(run + Math.abs(t.mfe) * 0.6); lo.push(run - Math.abs(t.mae) * 0.6)
   })
 
   // Drawdown
-  let peak = START_BALANCE
+  let peak = startBalance
   const ddReal = [100], ddLat = [100]
   sorted.forEach((_, i) => {
     peak = Math.max(peak, eq[i + 1])
@@ -45,22 +48,23 @@ export function computeStats(trades: Trade[]) {
   const maxDD = Math.max(0.0001, ...ddReal.map(v => (100 - v) / 100))
 
   // Sharpe / Sortino / Calmar
-  const rets = sorted.map(t => t.profit / START_BALANCE)
+  const rets = sorted.map(t => t.profit / startBalance)
   const mean = n ? sum(rets) / n : 0
   const sd = Math.sqrt(sum(rets.map(r => (r - mean) ** 2)) / (n || 1))
   const dsd = Math.sqrt(sum(rets.filter(r => r < 0).map(r => r * r)) / (n || 1))
-  const total = eq[eq.length - 1] / START_BALANCE - 1
+  const total = eq[eq.length - 1] / startBalance - 1
 
   // Durée sous l'eau (jours)
-  let uw = 0, longest = 0, curStart: number | null = null
-  let hwm = START_BALANCE
+  let longest = 0, curStart: number | null = null
+  let hwm = startBalance
   sorted.forEach((t, i) => {
     const ts = +new Date(t.closeTime)
-    if (eq[i + 1] >= hwm) { hwm = eq[i + 1]; if (curStart !== null) { longest = Math.max(longest, (ts - curStart) / 86400000); curStart = null } }
-    else if (curStart === null) curStart = ts
+    if (eq[i + 1] >= hwm) {
+      hwm = eq[i + 1]
+      if (curStart !== null) { longest = Math.max(longest, (ts - curStart) / 86400000); curStart = null }
+    } else if (curStart === null) curStart = ts
   })
   if (curStart !== null && sorted.length) longest = Math.max(longest, (+new Date(sorted[n - 1].closeTime) - curStart) / 86400000)
-  uw = longest
 
   const top5 = sorted.length >= 5 && gp > 0
     ? (sum([...wins].sort((a, b) => b.profit - a.profit).slice(0, 5).map(t => t.profit)) / gp) * 100 : null
@@ -75,7 +79,7 @@ export function computeStats(trades: Trade[]) {
     maxW, maxL, top5,
     winrate: n ? (wins.length / n) * 100 : 0,
     rrReal: avgL ? avgW / avgL : 0,
-    eq, hi, lo, ddReal, ddLat, maxDD, underwater: uw,
+    eq, hi, lo, ddReal, ddLat, maxDD, underwater: longest,
     sharpe: sd ? mean / sd : 0, sortino: dsd ? mean / dsd : 0, calmar: total / maxDD,
     balance: eq[eq.length - 1], totalPct: total * 100,
     totalProfit: sum(sorted.map(t => t.profit)),
