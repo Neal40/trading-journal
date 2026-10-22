@@ -204,3 +204,10 @@ body { background: var(--bg); color: var(--text); font-family: 'Poppins', sans-s
 .modal-field .input { width: 100%; padding: 9px 10px; }
 .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--line); }
 .modal-foot .btn-blue { padding: 8px 16px; }
+
+/* Ajustements style page Comptes */
+.alldata-row span:first-child { color: #e6e9ef; font-weight: 500; }
+.alldata-row span:last-child { text-align: right; }
+.acct-card-bal { font-size: 18px; font-weight: 700; }
+.acct-card-sub { color: var(--mute); font-size: 11px; }
+.alldata-foot .btn-blue { width: 100%; padding: 11px 16px; }
