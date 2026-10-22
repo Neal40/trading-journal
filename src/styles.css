@@ -1,7 +1,7 @@
 :root {
   --bg: #07090d; --card: #0b0e14; --line: #171c26;
   --text: #e6e9ef; --mute: #8b93a5;
-  --green: #22c55e; --red: #ef4444; --blue: #4d9fff;
+  --green: #22c55e; --red: #ef4444; --blue: #4d9fff; --cyan: #22f0e0;
   --accent: #2b50ff;
 }
 * { box-sizing: border-box; margin: 0; }
@@ -81,6 +81,21 @@ body { background: var(--bg); color: var(--text); font-family: 'Poppins', sans-s
 .card > .toolbar { position: absolute; top: 10px; right: 14px; display: flex; gap: 4px; }
 .card-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; }
 .card-h h3 { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .03em; color: #c3c9d6; }
+
+/* Textes et légendes des graphiques */
+.big { font-size: 22px; font-weight: 500; }
+.legend { display: flex; gap: 14px; font-size: 11px; color: var(--mute); margin-bottom: 8px; flex-wrap: wrap; }
+.legend .cy { color: var(--cyan); }
+.note { font-size: 11px; color: var(--mute); margin-top: 8px; line-height: 1.5; }
+.chartbox { position: relative; width: 100%; height: 220px; }
+
+/* Reward / Risk */
+.rrwrap { display: flex; align-items: flex-end; justify-content: space-around; height: 220px; gap: 6px; }
+.rrbar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; max-width: 140px; }
+.rrbar .n { font-size: 12px; margin-bottom: 4px; }
+.rrbar .b { width: 100%; border-radius: 2px; }
+.rrbar .n.pos { color: var(--green); }
+.rrbar .n.cy { color: var(--cyan); }
 
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
 .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }

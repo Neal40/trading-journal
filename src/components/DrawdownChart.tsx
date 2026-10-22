@@ -14,7 +14,7 @@ export function DrawdownChart({ s }: { s: Stats }) {
       <Seg<PeriodKey> value={period} onChange={setPeriod} options={[
         { v: '1J', l: '1J' }, { v: '1S', l: '1S' }, { v: '1M', l: '1M' }, { v: '1A', l: '1A' }, { v: 'ALL', l: 'All' }]} />
     </>}>
-      <div className="legend"><span className="neg">Drawdown Réalisé</span><span style={{ color: '#a79bff' }}>Drawdown Latent</span><span>- %</span></div>
+      <div className="legend"><span className="neg">Drawdown Réalisé</span><span style={{ color: '#a79bff' }}>Drawdown Latent</span><span className="muted">- %</span></div>
       <div className="chartbox">
         <Line options={{ ...baseOpts, scales: { x: { grid }, y: { grid } } } as any}
           data={{
