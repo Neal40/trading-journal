@@ -25,55 +25,69 @@ export default function JournalPage() {
   const s = computeStats(filterPeriod(trades, period))
 
   return (
-    <section>
-      <div className="page-head">
-        <div>
-          <h2 style={{ margin: 0 }}>Journal de trading</h2>
-          <div className="muted" style={{ fontSize: 12 }}>{label} · {s.n} positions</div>
+    <section className="journal">
+      {/* Bandeau compte */}
+      <div className="acct">
+        <div className="acct-ico">🏛</div>
+        <div className="acct-info">
+          <div><b>{label}</b> <span className="sb-mute">Login :</span></div>
+          <div className="pos" style={{ fontSize: 12 }}>Funded - Statut : Inconnu</div>
+          <div className="neg" style={{ fontSize: 12 }}>{s.n} positions</div>
         </div>
-        <div className="page-actions">
-          <button className="btn">Rapport PDF</button>
-          <Toolbar />
-        </div>
+        <button className="btn-blue">Changer de compte</button>
+      </div>
+
+      <div className="page-actions right">
+        <button className="btn">Rapport PDF</button>
+        <Toolbar />
       </div>
 
       <KpiRow s={s} />
 
-      <div className="grid g2" style={{ marginTop: 16 }}>
+      {/* 1. Graphique de performance + Hexagone social */}
+      <div className="grid g-main">
         <PerformanceChart s={s} />
-        <DrawdownChart s={s} />
-      </div>
-
-      <div className="grid g2" style={{ marginTop: 16 }}>
-        <ReturnChart s={s} />
-        <GainCalendar />
-      </div>
-
-      <div className="grid g3" style={{ marginTop: 16 }}>
-        <WinrateGauge s={s} />
-        <RewardRisk s={s} />
-        <SharpePanel s={s} />
-      </div>
-
-      <div className="grid g2" style={{ marginTop: 16 }}>
-        <RiskDistribution s={s} />
-        <MaeMfeChart s={s} />
-      </div>
-
-      <div className="grid g2" style={{ marginTop: 16 }}>
-        <DurationScatter s={s} />
         <SocialRadar s={s} />
       </div>
 
-      <div className="grid g2" style={{ marginTop: 16 }}>
+      {/* 2. Positions (pleine largeur) */}
+      <PositionsTable />
+
+      {/* 3. Winrate + Rendement */}
+      <div className="grid g-main">
+        <WinrateGauge s={s} />
+        <ReturnChart s={s} />
+      </div>
+
+      {/* 4. Drawdown + Reward/Risk */}
+      <div className="grid g-main">
+        <DrawdownChart s={s} />
+        <RewardRisk s={s} />
+      </div>
+
+      {/* 5. Sharpe + MAE/MFE */}
+      <div className="grid g-side">
+        <SharpePanel s={s} />
+        <MaeMfeChart s={s} />
+      </div>
+
+      {/* 6. Distribution Risk/Reward */}
+      <RiskDistribution s={s} />
+
+      {/* 7. Calendrier + Heatmap */}
+      <div className="grid g-half">
+        <GainCalendar />
         <TimeHeatmap />
+      </div>
+
+      {/* 8. Frais + Performance par symbole */}
+      <div className="grid g-half">
+        <FeesSummary />
         <SymbolPerformance />
       </div>
 
-      <div className="grid g2" style={{ marginTop: 16 }}>
-        <FeesSummary />
-        <PositionsTable />
-      </div>
+      {/* 9. Durée x Résultat */}
+      <DurationScatter s={s} />
     </section>
   )
 }
