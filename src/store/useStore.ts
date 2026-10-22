@@ -22,7 +22,10 @@ export const useStore = create<State>()(
       sourceLabel: 'Données de démo',
       setPeriod: (period) => set({ period }),
       setTrades: (trades, sourceLabel) => set({ trades, sourceLabel }),
-      importFrom: async (s) => set({ trades: await s.load(), sourceLabel: s.label }),
+      importFrom: async (s) => {
+        const trades = await s.load()
+        set({ trades, sourceLabel: s.label })
+      },
       reset: () => set({ trades: generateDemo(), sourceLabel: 'Données de démo' }),
     }),
     { name: 'trading-journal' }

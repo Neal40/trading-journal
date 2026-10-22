@@ -4,12 +4,12 @@ import { PerformanceChart } from './components/PerformanceChart'
 import { SocialRadar } from './components/SocialRadar'
 import { WinrateGauge } from './components/WinrateGauge'
 import { RewardRisk } from './components/RewardRisk'
-import DrawdownChart from './components/DrawdownChart'
-import DurationScatter from './components/DurationScatter'
-import ReturnChart from './components/ReturnChart'
-import RiskDistribution from './components/RiskDistribution'
-import SharpePanel from './components/SharpePanel'
-import MaeMfeChart from './components/MaeMfeChart'
+import { DrawdownChart } from './components/DrawdownChart'
+import { DurationScatter } from './components/DurationScatter'
+import { ReturnChart } from './components/ReturnChart'
+import { RiskDistribution } from './components/RiskDistribution'
+import { SharpePanel } from './components/SharpePanel'
+import { MaeMfeChart } from './components/MaeMfeChart'
 import GainCalendar from './components/GainCalendar'
 import TimeHeatmap from './components/TimeHeatmap'
 import FeesSummary from './components/FeesSummary'
@@ -34,9 +34,9 @@ export default function App() {
       </header>
       <KpiRow s={s} />
       <div className="grid g2"><PerformanceChart s={s} /><SocialRadar s={s} /></div>
-      <div className="grid g3"><DrawdownChart /><RewardRisk s={s} /><WinrateGauge s={s} /></div>
-      <div className="grid g2"><ReturnChart /><DurationScatter /></div>
-      <div className="grid g3"><RiskDistribution /><SharpePanel /><MaeMfeChart /></div>
+      <div className="grid g3"><DrawdownChart s={s} /><RewardRisk s={s} /><WinrateGauge s={s} /></div>
+      <div className="grid g2"><ReturnChart s={s} /><DurationScatter s={s} /></div>
+      <div className="grid g3"><RiskDistribution s={s} /><SharpePanel s={s} /><MaeMfeChart s={s} /></div>
       <div className="grid g2"><GainCalendar /><TimeHeatmap /></div>
       <div className="grid g3"><FeesSummary /><SymbolPerformance /><ImportPanel /></div>
       <PositionsTable />
