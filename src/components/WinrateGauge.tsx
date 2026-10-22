@@ -12,17 +12,22 @@ export function WinrateGauge({ s }: { s: Stats }) {
   const st = sym === 'Tous' ? s : computeStats(s.sorted.filter(t => t.symbol === sym))
   return (
     <Card title="Winrate %" toolbar={
-      <select value={sym} onChange={e => setSym(e.target.value)}>
+      <select className="input" value={sym} onChange={e => setSym(e.target.value)}>
         <option>Tous</option>{symbols.map(x => <option key={x}>{x}</option>)}
       </select>}>
-      <div className="big">{fmt(st.winrate)}%</div>
-      <div className="note" style={{ margin: 0 }}>{st.n} positions</div>
+      <div className="wr-head">
+        <div className="wr-value">{fmt(st.winrate)}%</div>
+        <div className="kpi-sub">{st.n} positions</div>
+      </div>
       <div className="chartbox" style={{ height: 200 }}>
-        <Doughnut options={{ ...baseOpts, rotation: -90, circumference: 180, cutout: '60%' } as any}
+        <Doughnut options={{ ...baseOpts, rotation: -90, circumference: 180, cutout: '60%', plugins: { legend: { display: false }, tooltip: { enabled: true } } } as any}
           data={{ labels: ['Gagnantes', 'Perdantes'], datasets: [{ data: [st.wins.length, st.losses.length], backgroundColor: ['#22c55e', '#ef4444'], borderWidth: 0 }] }} />
       </div>
-      <div style={{ textAlign: 'center', fontSize: 12 }}><span className="pos">●</span> {st.wins.length} gagnantes &nbsp; <span className="neg">●</span> {st.losses.length} perdantes</div>
-      <div className="note" style={{ textAlign: 'center' }}>Les profits ou pertes en dessous de 0.2% du solde du compte ne sont pas pris en compte.</div>
+      <div className="wr-legend">
+        <span><span className="pos">●</span> {st.wins.length} gagnantes</span>
+        <span><span className="neg">●</span> {st.losses.length} perdantes</span>
+      </div>
+      <div className="note-center">Les profits ou pertes en dessous de 0.2% du solde du compte ne sont pas pris en compte.</div>
     </Card>
   )
 }
