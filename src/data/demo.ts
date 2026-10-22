@@ -1,7 +1,7 @@
 import type { Trade } from '../types'
 import type { TradeSource } from './source'
 
-export function generateDemo(n = 40, startBalance = 100000): Trade[] {
+export function generateDemo(n = 40): Trade[] {
   let seed = 42
   const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647
   const syms = ['NAS', 'NAS', 'NAS', 'SP']
@@ -23,22 +23,28 @@ export function generateDemo(n = 40, startBalance = 100000): Trade[] {
       id: 'demo-' + i,
       openTime: d.toISOString(),
       closeTime: new Date(d.getTime() + dur * 1000).toISOString(),
-      symbol, ticket: String(Math.floor(5e8 + rnd() * 3e8)),
+      symbol,
+      ticket: String(Math.floor(5e8 + rnd() * 3e8)),
       type: buy ? 'Buy' : 'Sell',
       volume: Math.round(8 + rnd() * 200),
-      entry, sl: null, tp: null,
+      entry,
+      sl: null,
+      tp: null,
       exit: entry + (profit > 0 ? 1 : -1) * (buy ? 1 : -1) * rnd() * 60,
-      profit, commission: 0, r,
+      profit,
+      commission: 0,
+      r,
       mae: -(profit < 0 ? Math.abs(profit) * (0.4 + rnd() * 0.6) : rnd() * 600),
       mfe: profit > 0 ? profit * (1 + rnd() * 0.3) : rnd() * 500,
-      tags: [], images: [],
+      tags: [],
+      images: [],
     })
   }
-  void startBalance
   return out
 }
 
 export const demoSource: TradeSource = {
-  id: 'demo', label: 'Données de démo',
+  id: 'demo',
+  label: 'Données de démo',
   load: async () => generateDemo(),
 }

@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Trade, PeriodKey, Account, Ecriture } from '../types'
-import { generateDemo } from '../data/demo'
 import type { TradeSource } from '../data/source'
 
 const DEFAULT_ACCOUNT: Account = {
@@ -38,9 +37,9 @@ interface State {
 export const useStore = create<State>()(
   persist(
     (set) => ({
-      trades: generateDemo(),
+      trades: [],
       period: 'ALL',
-      sourceLabel: 'Données de démo',
+      sourceLabel: 'Aucune donnée',
       accounts: [DEFAULT_ACCOUNT],
       activeAccountId: DEFAULT_ACCOUNT.id,
       ecritures: [],
@@ -54,7 +53,7 @@ export const useStore = create<State>()(
         const trades = await s.load()
         set({ trades, sourceLabel: s.label })
       },
-      reset: () => set({ trades: generateDemo(), sourceLabel: 'Données de démo' }),
+      reset: () => set({ trades: [], sourceLabel: 'Aucune donnée' }),
       addAccount: (a) =>
         set((st) => {
           const id = crypto.randomUUID()
@@ -69,7 +68,8 @@ export const useStore = create<State>()(
           const accounts = st.accounts.filter((a) => a.id !== id)
           return {
             accounts,
-            activeAccountId: st.activeAccountId === id && accounts[0] ? accounts[0].id : st.activeAccountId,
+            activeAccountId:
+              st.activeAccountId === id && accounts[0] ? accounts[0].id : st.activeAccountId,
           }
         }),
       moveAccount: (id, dir) =>
