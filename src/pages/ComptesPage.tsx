@@ -1,12 +1,17 @@
 import { useMemo, useState } from 'react'
 import { useStore } from '../store/useStore'
 import { ALL_ACCOUNT_ID } from '../types'
-import type { Account, Trade } from '../types'
+import type { Account, AccountType, Trade } from '../types'
+import type { PageKey } from '../components/Sidebar'
 
 const WARN_DAYS = 23
 const INACTIVE_DAYS = 30
 const ALERT_DAYS_LEFT = 3
 const DAY = 86400000
+
+const FIRMS = ['Apex', 'Topstep'] as const
+const ACCOUNT_TYPES: AccountType[] = ['Funded', 'Challenge', 'Paper', 'Review', 'Backtest']
+const SIZES = [25000, 50000, 100000, 150000, 300000]
 
 type Tab = 'Tous' | 'Actifs' | 'Bientôt inactifs' | 'Inactifs'
 type Status = 'actif' | 'bientot' | 'inactif'
@@ -25,13 +30,18 @@ function statusOf(last: number | null, now: number): { status: Status; daysSince
   return { status: 'actif', daysSince, daysLeft }
 }
 
-export default function ComptesPage() {
+interface Props {
+  onNavigate: (p: PageKey) => void
+}
+
+export default function ComptesPage({ onNavigate }: Props) {
   const accounts = useStore(s => s.accounts)
   const trades = useStore(s => s.trades)
   const activeId = useStore(s => s.activeAccountId)
   const setActive = useStore(s => s.setActiveAccount)
   const addAccount = useStore(s => s.addAccount)
   const [tab, setTab] = useState<Tab>('Tous')
+  const [showAdd, setShowAdd] = useState(false)
 
   const now = Date.now()
 
@@ -55,7 +65,6 @@ export default function ComptesPage() {
     Inactifs: rows.filter(r => r.status === 'inactif').length,
   }
 
-  // Compte All-Data : agrégat de tous les trades
   const allTrades = trades
   const wins = allTrades.filter(t => t.profit > 0).length
   const losses = allTrades.filter(t => t.profit < 0).length
@@ -68,13 +77,12 @@ export default function ComptesPage() {
 
   const openAllData = () => {
     setActive(ALL_ACCOUNT_ID)
-    window.dispatchEvent(new CustomEvent('navigate', { detail: 'journal' }))
+    onNavigate('journal')
   }
 
   return (
     <section className="comptes">
       <div className="comptes-top">
-        {/* Panneau All-Data */}
         <div className="card alldata">
           <h3>COMPTE ALL-DATA</h3>
           <div className="alldata-head">
@@ -92,7 +100,6 @@ export default function ComptesPage() {
           <button className="btn-blue full" onClick={openAllData}>Voir toutes mes performances</button>
         </div>
 
-        {/* Liste des comptes */}
         <div className="card">
           <div className="tabs">
             {(Object.keys(counts) as Tab[]).map(k => (
@@ -113,17 +120,13 @@ export default function ComptesPage() {
                 onSelect={() => setActive(r.account.id)}
               />
             ))}
-            <button
-              className="acct-add"
-              onClick={() => addAccount({ name: 'Nouveau compte', type: 'Paper', size: 100000, startBalance: 100000 })}
-            >
+            <button className="acct-add" onClick={() => setShowAdd(true)}>
               + Ajouter un nouveau compte
             </button>
           </div>
         </div>
       </div>
 
-      {/* Profitabilité totale */}
       <div className="card">
         <h3>PROFITABILITÉ TOTALE</h3>
         <div className="kpi-row">
@@ -134,7 +137,84 @@ export default function ComptesPage() {
           <div className="kpi hl"><span>Résultat net</span><b className={totalProfit >= 0 ? 'pos' : 'neg'}>{totalProfit.toFixed(2)} €</b></div>
         </div>
       </div>
+
+      {showAdd && (
+        <AddAccountModal
+          onClose={() => setShowAdd(false)}
+          onSave={(a) => {
+            addAccount(a)
+            setShowAdd(false)
+          }}
+        />
+      )}
     </section>
+  )
+}
+
+function AddAccountModal({ onClose, onSave }: {
+  onClose: () => void
+  onSave: (a: Omit<Account, 'id'>) => void
+}) {
+  const [name, setName] = useState('')
+  const [firm, setFirm] = useState<string>('Apex')
+  const [login, setLogin] = useState('')
+  const [type, setType] = useState<AccountType>('Challenge')
+  const [size, setSize] = useState<number>(50000)
+
+  const canSave = name.trim().length > 0
+
+  const submit = () => {
+    if (!canSave) return
+    onSave({
+      name: name.trim(),
+      firm,
+      login: login.trim() || undefined,
+      type,
+      size,
+      startBalance: size,
+    })
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-head">
+          <h3>Nouveau compte</h3>
+        </div>
+        <div className="modal-body">
+          <label className="field">
+            <span>Nom du compte</span>
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="Ex : Topstep 50k #1" />
+          </label>
+          <label className="field">
+            <span>Firme</span>
+            <select value={firm} onChange={e => setFirm(e.target.value)}>
+              {FIRMS.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+          </label>
+          <label className="field">
+            <span>Login</span>
+            <input value={login} onChange={e => setLogin(e.target.value)} placeholder="Optionnel" />
+          </label>
+          <label className="field">
+            <span>Type</span>
+            <select value={type} onChange={e => setType(e.target.value as AccountType)}>
+              {ACCOUNT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </label>
+          <label className="field">
+            <span>Taille du compte</span>
+            <select value={size} onChange={e => setSize(Number(e.target.value))}>
+              {SIZES.map(s => <option key={s} value={s}>{s.toLocaleString('fr-FR')} $</option>)}
+            </select>
+          </label>
+        </div>
+        <div className="modal-foot">
+          <button className="btn-ghost" onClick={onClose}>Annuler</button>
+          <button className="btn-blue" onClick={submit} disabled={!canSave}>Enregistrer</button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -155,8 +235,8 @@ function AccountCard({ account, pnl, status, daysLeft, isActive, onSelect }: {
         <b>{account.name}</b>
       </div>
       <div className="sb-mute">{account.firm ?? account.type}{account.login ? ` · ${account.login}` : ''}</div>
-      <div>{account.size.toLocaleString('fr-FR')} €</div>
-      <div className={pnl >= 0 ? 'pos' : 'neg'}>{pnl >= 0 ? '+' : ''}{pnl.toFixed(2)} €</div>
+      <div>{account.size.toLocaleString('fr-FR')} $</div>
+      <div className={pnl >= 0 ? 'pos' : 'neg'}>{pnl >= 0 ? '+' : ''}{pnl.toFixed(2)} $</div>
       {showAlert && (
         <div className="alert">⚠ Inactivité dans {Math.ceil(daysLeft!)} jour(s) — prends une position</div>
       )}

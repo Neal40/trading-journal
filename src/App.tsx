@@ -12,7 +12,7 @@ export default function App() {
     <div className="layout">
       <Sidebar page={page} onNavigate={setPage} />
       <main className="content">
-        {page === 'comptes' && <ComptesPage />}
+        {page === 'comptes' && <ComptesPage onNavigate={setPage} />}
         {page === 'journal' && <JournalPage />}
         {page === 'factures' && <FacturesPage />}
       </main>
